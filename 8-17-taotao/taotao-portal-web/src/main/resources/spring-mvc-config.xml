@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+          http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+          http://www.springframework.org/schema/context
+          http://www.springframework.org/schema/context/spring-context-3.0.xsd
+          http://www.springframework.org/schema/mvc
+          http://www.springframework.org/schema/mvc/spring-mvc.xsd
+           http://code.alibabatech.com/schema/dubbo
+           http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+    <!--    注解扫描-->
+    <context:component-scan base-package="com.itszt.taotao.portal.controller"></context:component-scan>
+
+
+    <context:property-placeholder location="classpath:ContentCat.properties,classpath:fastdfs.properties"></context:property-placeholder>
+
+    <!--    json转换器-->
+    <bean id="jsonconverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"></bean>
+    <mvc:annotation-driven>
+        <mvc:message-converters>
+            <ref bean="jsonconverter"></ref>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+
+
+
+    <!--    静态资源处理-->
+    <mvc:resources mapping="/js/**/" location="/js/"></mvc:resources>
+    <mvc:resources mapping="/css/**/" location="/css/"></mvc:resources>
+    <mvc:resources mapping="/images/**/" location="/images/"></mvc:resources>
+
+    <!--    视图解析器-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/jsp/"></property>
+        <property name="suffix" value=".jsp"></property>
+    </bean>
+
+    <!--定义了提供方应用信息，用于计算依赖关系；在 dubbo-admin 或 dubbo-monitor 会显示这个名字，方便辨识-->
+    <dubbo:application name="taotao-portal-web" owner="sj" organization="itszt"/>
+    <!--使用 zookeeper 注册中心暴露服务，注意要先开启 zookeeper-->
+    <dubbo:registry address="zookeeper://39.107.114.120:2181"/>
+    <!-- 用dubbo协议在20880端口暴露服务(每个模板需要不同的端口) -->
+    <dubbo:protocol name="dubbo" port="28084"/>
+    <!--提供服务: interface: 指明当前工程的接口 ref:指明当前工程的实现类,-->
+    <!--    <dubbo:com.itszt.manager.service interface="com.itszt.com.itszt.manager.service.OrderService" ref="orderServiceImpl" protocol="dubbo"/>-->
+
+    <!--请求服务 id:指明请求服务的名称 interface:指明请求服务的接口名-->
+    <dubbo:reference id="goodsItemService" interface="com.itszt.taotao.manager.inter.GoodsItemService" timeout="5000"></dubbo:reference>
+
+    <dubbo:reference id="catService" interface="com.itszt.taotao.manager.inter.CatService" timeout="5000"></dubbo:reference>
+
+    <dubbo:reference id="contentService" interface="com.itszt.taotao.manager.inter.ContentService" timeout="5000"></dubbo:reference>
+
+</beans>
